@@ -1,0 +1,344 @@
+================================================================================
+BALANÇ — CÓMO SE CALCULA TODO
+================================================================================
+Referencia de las fórmulas que usa la app.
+Los ejemplos van con: hombre, 58,85 kg, 165 cm, 30 años, volumen.
+
+
+================================================================================
+BLOQUE 1 — LO QUE GASTAS (el objetivo del día)
+================================================================================
+
+Son siete pasos encadenados. Cada uno multiplica o suma sobre el anterior.
+
+
+PASO 1 · METABOLISMO BASAL (BMR)
+--------------------------------------------------------------------------------
+Lo que gastarías tumbado sin moverte 24 h.
+
+  Mifflin-St Jeor (el que usa por defecto):
+      BMR = 10 × peso(kg) + 6,25 × altura(cm) − 5 × edad + K
+      K = +5 si hombre, −161 si mujer
+
+  Ejemplo:  10×58,85 + 6,25×165 − 5×30 + 5
+            588,5 + 1031,25 − 150 + 5 = 1.475 kcal
+
+  Katch-McArdle (se activa solo si rellenas el % de grasa):
+      masa magra = peso × (1 − %grasa/100)
+      BMR = 370 + 21,6 × masa magra
+
+  Katch-McArdle es mejor cuando conoces tu composición, porque el músculo
+  gasta y la grasa casi no. Mifflin no distingue: dos personas de 80 kg le
+  dan el mismo número aunque una tenga el doble de músculo.
+
+  Es la parte MÁS fiable del cálculo: error típico ±10 %.
+
+
+PASO 2 · MULTIPLICADOR BASE (× 1,22 por defecto)
+--------------------------------------------------------------------------------
+      base = BMR × 1,22        →  1.475 × 1,22 = 1.800 kcal
+
+  ATENCIÓN: este 1,22 NO es el factor de actividad clásico (1,2 sedentario /
+  1,55 activo / 1,725 muy activo). Esos factores llevan dentro el caminar y
+  el entrenar. Aquí los pasos y el gym se suman aparte, en los pasos 3 y 4,
+  así que usar 1,55 los contaría DOS VECES.
+
+  El 1,22 solo cubre dos cosas:
+      · Digestión (efecto térmico de los alimentos) ...... ~10 % de lo comido
+      · Movimiento no registrado ......................... ~8-15 % del basal
+        (estar de pie, cocinar, ducharse, conducir, moverse en la silla)
+
+  Suma ≈ 1,20 tirando bajo. Se usa 1,22.
+
+  En MODO FIJO el multiplicador por defecto es 1,45 y ahí SÍ es el factor
+  clásico completo: en ese modo pasos y entreno NO se suman.
+
+
+PASO 3 · CALORÍAS DE LOS PASOS
+--------------------------------------------------------------------------------
+      kcal_pasos = pasos × peso(kg) × 0,00032
+
+  Ejemplo:  8.000 × 58,85 × 0,00032 = 151 kcal
+
+  De dónde sale el 0,00032:
+      caminar cuesta ~0,35 kcal NETAS por kg y por km
+      1 km ≈ 1.250 pasos
+      0,35 ÷ 1.250 = 0,00028
+      se sube a 0,00032 porque la zancada varía entre personas
+
+  "Netas" = ya descontado lo que gastarías parado ese rato. Si fueran brutas
+  se solaparían con el paso 2.
+
+
+PASO 4 · CALORÍAS DEL ENTRENAMIENTO
+--------------------------------------------------------------------------------
+      kcal_entreno = (MET − 1) × 3,5 × peso(kg) ÷ 200 × minutos
+
+  Ejemplo (pesas, MET 5, 70 min):
+      (5−1) × 3,5 × 58,85 ÷ 200 × 70 = 288 kcal
+
+  Piezas de la fórmula:
+      MET .... múltiplo del gasto en reposo de esa actividad
+      3,5 .... ml de oxígeno por kg y minuto que consumes en reposo (1 MET)
+      200 .... convierte consumo de oxígeno en kcal
+      −1 ..... QUITA el metabolismo de reposo de esos minutos, porque ya
+               está pagado en el paso 2. Sin este −1 se contaría dos veces.
+
+  Tabla de MET que usa la app:
+      Pesas / hipertrofia .......... 5,0
+      Pesas intenso ................ 6,0
+      Bandas en casa ............... 4,0
+      Caminar (extra) .............. 3,5
+      Correr ....................... 9,8
+      Bicicleta .................... 7,5
+      Elíptica / cinta ............. 5,5
+      Natación ..................... 7,0
+      HIIT / circuito .............. 8,0
+      Fútbol, pádel, baloncesto .... 7,0
+      Moto (ruta) .................. 3,0
+      Otro ......................... 5,0
+
+  Esta es la parte MENOS fiable de todo el cálculo. Una sesión de pesas real
+  puede ir de 3,5 a 6 MET según cuánto descanses entre series. Si tu reloj te
+  da otra cifra, escríbela a mano: manda siempre la tuya.
+
+
+        MANTENIMIENTO = paso2 + paso3 + paso4
+                      = 1.800 + 151 + 288 = 2.239 kcal
+
+
+PASO 5 · FACTOR APRENDIDO (× 1,00 al principio)
+--------------------------------------------------------------------------------
+      mantenimiento_corregido = mantenimiento × factor
+
+  Arranca en 1,00. Se explica entero en el BLOQUE 3.
+
+
+PASO 6 · AJUSTE SEGÚN OBJETIVO
+--------------------------------------------------------------------------------
+      objetivo_base = mantenimiento_corregido × (1 + ajuste)
+
+  El deslizador de Ritmo (r, de 0 a 1) se traduce así:
+      Perder grasa ..... ajuste = −(0,10 + r × 0,20)   →  −10 % a −30 %
+      Mantener ......... ajuste = 0
+      Ganar músculo .... ajuste = +(0,03 + r × 0,17)   →   +3 % a +20 %
+
+  Ejemplo (volumen, deslizador al 40 %):
+      ajuste = 0,03 + 0,40×0,17 = +9,8 %
+      2.239 × 1,098 = 2.458 kcal
+
+  Equivalencia en peso semanal que muestra la app:
+      kg/semana = (mantenimiento × ajuste × 7) ÷ 7.700
+
+
+PASO 7 · TRASPASO DE CALORÍAS
+--------------------------------------------------------------------------------
+      objetivo_hoy = objetivo_base + saldo
+
+      saldo = Σ (objetivo_base(día) − comido(día))
+              para todos los días anteriores de la ventana
+              LIMITADO a ±400 kcal (configurable)
+
+  Ventana: desde el lunes (por defecto) o sin límite.
+  Solo cuentan los días en los que apuntaste algo. Un día sin registrar NO
+  se toma como un déficit gigante: se ignora.
+
+  ¿Es correcto nutricionalmente? Sí. El peso responde al balance de la
+  semana, no al de un día suelto. Comer 300 menos el martes y 300 más el
+  miércoles da el mismo resultado que comer justo los dos días.
+
+  El tope existe para que no se acumule un agujero de 2.000 kcal que luego
+  intentes tapar de golpe.
+
+  Hay un suelo de seguridad: el objetivo nunca baja de BMR × 0,85.
+
+
+================================================================================
+BLOQUE 2 — LO QUE COMES
+================================================================================
+
+PASO 1 · PASAR EL PESO A CRUDO
+--------------------------------------------------------------------------------
+  Todos los alimentos de la base están tabulados EN CRUDO. Si marcas
+  "ya cocinado", la app divide por el rendimiento de esa cocción:
+
+      gramos_crudos = gramos_introducidos ÷ rendimiento
+
+  Ejemplo:  90 g de pollo a la plancha ÷ 0,75 = 120 g crudos
+            224 g de arroz hervido ÷ 2,80 = 80 g crudos
+
+  El rendimiento es peso_cocinado ÷ peso_crudo. La carne pierde agua
+  (0,75), el arroz y la pasta la absorben (2,80 y 2,60).
+
+  Esto es lo que permite pesar lo que tienes delante en el plato sin tener
+  que acordarte de cuánto pusiste en la olla.
+
+
+PASO 2 · MACROS DEL ALIMENTO
+--------------------------------------------------------------------------------
+      macro = valor_por_100g × gramos_crudos ÷ 100
+
+  Se aplica igual a kcal, proteína, carbohidratos, grasa y fibra.
+
+
+PASO 3 · ACEITE ABSORBIDO AL COCINAR
+--------------------------------------------------------------------------------
+      gramos_aceite = oil_de_esa_cocción × gramos_crudos ÷ 100
+
+      + kcal:   gramos_aceite × 9
+      + grasa:  gramos_aceite × 1
+
+  ("oil" está definido por cada método en foods.js, en gramos de aceite
+  por cada 100 g de producto CRUDO.)
+
+  Ejemplo:  120 g de pollo a la plancha, oil = 2
+            2 × 120 ÷ 100 = 2,4 g de aceite = 22 kcal
+
+  Ejemplo:  1 huevo S (43 g) frito, oil = 10
+            10 × 43 ÷ 100 = 4,3 g de aceite = 39 kcal
+            huevo crudo 61 kcal + aceite 39 = 100 kcal
+            (el mismo huevo duro: 61 kcal)
+
+  El campo de aceite se puede sobrescribir a mano en cada entrada.
+
+
+UN DETALLE QUE VAS A NOTAR
+--------------------------------------------------------------------------------
+  Las kcal que muestra NO salen de multiplicar los macros por 4/4/9. Se usa
+  el valor calórico tabulado del alimento, que es el correcto.
+
+  Si sumas tú los macros a mano te saldrá un 2-4 % de diferencia, por la
+  fibra (aporta ~2 kcal/g, no 4) y por los redondeos de la tabla. No es un
+  fallo de la app.
+
+
+REPARTO DE MACROS
+--------------------------------------------------------------------------------
+      proteína(g) = protPerKg × peso
+      grasa(g)    = fatPerKg × peso
+      carbos(g)   = (objetivo − proteína×4 − grasa×9) ÷ 4     mínimo 30 g
+
+  Valores por defecto:
+      Perder grasa ..... 2,2 g/kg proteína · 0,8 g/kg grasa
+      Ganar músculo .... 2,0 g/kg proteína · 1,0 g/kg grasa
+      Mantener ......... 1,8 g/kg proteína · 0,9 g/kg grasa
+
+  Los carbohidratos son la variable de ajuste: absorben todo lo que sobra.
+
+
+================================================================================
+BLOQUE 3 — EL FACTOR APRENDIDO
+================================================================================
+
+No usa ninguna fórmula. Usa la ecuación de balance energético al revés:
+
+      GASTO REAL = lo que has comido − lo que ha cambiado tu peso
+
+Si comes 2.400 al día tres semanas y no te mueves de peso, gastas 2.400.
+Da igual lo que diga Mifflin. El peso es el chivato.
+
+
+CÓMO LO CALCULA (cada vez que abres Progreso)
+--------------------------------------------------------------------------------
+  1. Coge los últimos 28 días con comida apuntada.
+     Si hay menos de 10 días con registro, o menos de 6 pesajes: no hace nada.
+
+  2. Promedia el PRIMER tercio de pesajes y el ÚLTIMO tercio.
+     Promediar mata el ruido de agua, sal e intestino. Un solo pesaje inicial
+     y otro final daría barbaridades.
+
+  3. Coge la ingesta media del tramo central, entre esos dos promedios.
+
+  4. Aplica:
+         gasto_real = ingesta_media − (Δkg × 7.700 ÷ días)
+
+  5. Compara con lo que la fórmula predecía para esos mismos días:
+         factor = gasto_real ÷ gasto_predicho
+     Limitado entre 0,82 y 1,22.
+
+  6. No lo aplica de golpe:
+         factor_nuevo = factor_anterior × 0,5 + factor_calculado × 0,5
+
+
+EJEMPLO
+--------------------------------------------------------------------------------
+  La fórmula predice 2.238 kcal/día.
+  Apuntas 2.400 de media durante 21 días y subes solo 100 g.
+
+      gasto_real = 2.400 − (0,1 × 7.700 ÷ 21) = 2.363 kcal
+      factor = 2.363 ÷ 2.238 = 1,056   → un 5,6 % más de lo previsto
+
+  La app sube tu objetivo unas 125 kcal y sigue vigilando.
+
+
+LO IMPORTANTE
+--------------------------------------------------------------------------------
+  El factor multiplica el gasto ENTERO, no solo el 1,22 del paso 2. Así que
+  también absorbe si la fórmula de los pasos se queda corta, o si el MET de
+  las pesas está mal para cómo entrenas tú. No necesita saber cuál de los
+  tres estaba equivocado.
+
+
+DÓNDE FALLA — no te fíes a ciegas
+--------------------------------------------------------------------------------
+  · Los 7.700 kcal/kg son de GRASA PURA. Haciendo volumen, parte de lo que
+    subes es glucógeno y agua, que energéticamente casi no cuestan. La app lo
+    lee como si el kilo te hubiera costado 7.700 kcal y calculará un gasto
+    MÁS BAJO del real. Pasa sobre todo las dos primeras semanas al subir los
+    carbohidratos. Por eso el mínimo son 10 días y el tope ±22 %.
+
+  · Asume que lo que apuntas es lo que comes. Si te dejas el aceite de la
+    sartén, el error se lo come el factor y te bajará el objetivo sin motivo.
+
+  · Necesita pesajes regulares. Con 2-3 por semana ya funciona; a diario,
+    mejor.
+
+
+================================================================================
+BLOQUE 4 — DÓNDE ESTÁ LA INCERTIDUMBRE
+================================================================================
+
+De mayor a menor error:
+
+  1. Calorías del entreno (paso 4)  ....... los MET son un promedio grosero
+  2. Calorías de los pasos (paso 3)  ...... la zancada varía mucho
+  3. Multiplicador base (paso 2)  ......... estimación razonada, no medida
+  4. Metabolismo basal (paso 1)  .......... ±10 %, lo más fiable
+
+Por eso el factor aprendido del bloque 3 es lo que de verdad afina el número
+a partir de la tercera semana. Todo lo anterior es solo el punto de partida
+mientras la app no tiene datos tuyos.
+
+
+================================================================================
+BLOQUE 5 — RESUMEN EN UNA PÁGINA
+================================================================================
+
+GASTO
+      BMR          = 10×peso + 6,25×altura − 5×edad + (5 | −161)
+      base         = BMR × 1,22
+      pasos        = nº_pasos × peso × 0,00032
+      entreno      = (MET−1) × 3,5 × peso ÷ 200 × minutos
+      mantenim.    = base + pasos + entreno
+      corregido    = mantenim. × factor_aprendido
+      objetivo     = corregido × (1 + ajuste_objetivo)
+      objetivo_hoy = objetivo + saldo_traspasado   (tope ±400)
+
+COMIDA
+      gramos_crudos = gramos ÷ rendimiento_cocción   (si pesaste cocinado)
+      macros        = valor_100g × gramos_crudos ÷ 100
+      aceite        = oil_cocción × gramos_crudos ÷ 100   (×9 kcal, ×1 grasa)
+
+MACROS OBJETIVO
+      proteína = protPerKg × peso
+      grasa    = fatPerKg × peso
+      carbos   = (objetivo − proteína×4 − grasa×9) ÷ 4
+
+ANILLO
+      restantes = objetivo_hoy − comido
+
+FACTOR APRENDIDO
+      gasto_real = ingesta_media − (Δkg × 7.700 ÷ días)
+      factor     = gasto_real ÷ gasto_predicho          (entre 0,82 y 1,22)
+
+================================================================================
